@@ -4,12 +4,12 @@ var bodyParser = require("body-parser");
 var methodOverride = require("method-override");
 var mysql = require("mysql");
 var connectionObject = {
-		host: "localhost",
-		user: 'root',
-		password: 'pageupto123',
-		database: 'foodpp',
-		port: 3306
-	};
+	host: "localhost",
+	user: 'root',
+	password: 'pageupto123',
+	database: 'foodpp',
+	port: 3306
+};
 var session = require("express-session");
 var forEach = require('async-foreach').forEach;
 
@@ -20,8 +20,8 @@ var forEach = require('async-foreach').forEach;
 // tells express to convet ejs files to html files
 app.set("view engine", "ejs");
 
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(express.static(__dirname+"/public"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(__dirname + "/public"));
 app.use(methodOverride("_method"));
 
 // creates a session class
@@ -46,19 +46,19 @@ app.use(function (req, res, next) {
 app.get("/", function (req, res) {
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err) {
-		if(err) { console.log(err) }
+		if (err) { console.log(err) }
 		else {
-			connection.query("SELECT DISTINCT City, Area FROM restaurant",function (err2, locations, fields) {
+			connection.query("SELECT DISTINCT City, Area FROM restaurant", function (err2, locations, fields) {
 				if (err2) { console.log(err2) }
 				else {
 					var cities = new Set();
-					locations.forEach( function(element, index) {
+					locations.forEach(function (element, index) {
 						cities.add(element.City);
 					});
 					let citiesArray = Array.from(cities);
 					console.log(JSON.stringify(citiesArray));
 					connection.end();
-					res.render("index",{cities: citiesArray, locations:locations});
+					res.render("index", { cities: citiesArray, locations: locations });
 				}
 			});
 		}
@@ -66,7 +66,7 @@ app.get("/", function (req, res) {
 });
 
 app.post("/", function (req, res) {
-	res.redirect("/restaurants/"+req.body.city+"/"+req.body.area+"");
+	res.redirect("/restaurants/" + req.body.city + "/" + req.body.area + "");
 });
 
 // -------
@@ -88,8 +88,8 @@ app.post("/login", function (req, res) {
 	connection.query(query, [email], function (err, results, fields) {
 		if (err) { console.log(err); }
 		else {
-			if(results.length>0){
-				if(results[0].Password == password){
+			if (results.length > 0) {
+				if (results[0].Password == password) {
 					req.session.user = results[0];
 					res.redirect("/");
 				} else {
@@ -124,25 +124,32 @@ app.post("/register", function (req, res) {
 	address = req.body.user.address;
 
 	var connection = mysql.createConnection(connectionObject);
-	connection.connect(function (err) {
-		if(err){
+	connection.connect(async (err) => {
+		if (err) {
 			console.log(err)
 		} else {
 			var values = [[fname, lname, mobile, email, password, address]];
 			var queryFields = "Fname, Lname, Mobile, Email, Password, Address";
 			var query = "INSERT INTO user(" + queryFields + ") VALUES ?";
-			connection.query(query, [values], function (err, result, fields) {
-				if(err) {
-					console.log(err);
-				} else {
-					console.log("User created");
-					connection.end();
-					res.redirect("/login");
-				}
-			});
+			await exeQuer(connection, query, values)
+			connection.end();
+			await
+				res.redirect("/login");
 		}
 	});
 });
+
+let exeQuer = async (connection, q, values) => {
+	return new Promise((res, rej) => {
+		connection.query(q, [values], function (err, result, fields) {
+			if (err) {
+				console.log(err);
+			} else {
+				res()
+			}
+		})
+	})
+}
 
 // ----------
 //   LOGOUT
@@ -170,18 +177,18 @@ app.get("/restaurants/:city/:area", function (req, res) {
 
 		if (err1) { console.log(err1); }
 		else {
-			var query1 = "SELECT * FROM restaurant where City = '" + city +  "' and Area = '"+area+"'";
+			var query1 = "SELECT * FROM restaurant where City = '" + city + "' and Area = '" + area + "'";
 			connection.query(query1, function (err2, restaurants, fields) {
 
 				if (err2) { console.log(err2); }
 				else {
 
-					forEach(restaurants, function(restaurant, index) {
+					forEach(restaurants, function (restaurant, index) {
 
-						var query2 = "SELECT Menu_name FROM menu WHERE Restaurant_id = "+restaurant.Restaurant_id;
+						var query2 = "SELECT Menu_name FROM menu WHERE Restaurant_id = " + restaurant.Restaurant_id;
 						connection.query(query2, function (err3, menuNames, index) {
 							if (err3) { console.log(err3); }
-							else{
+							else {
 								restaurant.menuNames = menuNames;
 								semiFinalRestaurants.push(restaurant);
 							}
@@ -189,27 +196,27 @@ app.get("/restaurants/:city/:area", function (req, res) {
 						var done = this.async();
 						setTimeout(done, 50);
 					},
-					function (notAborted) {
+						function (notAborted) {
 
-						forEach(semiFinalRestaurants, function (restaurant, index) {
+							forEach(semiFinalRestaurants, function (restaurant, index) {
 
-							var query3 = "SELECT COUNT(*) FROM review WHERE Restaurant_id ="+restaurant.Restaurant_id;
-							connection.query(query3, function (err4, noOfReviews, index) {
-								if (err4) { console.log(err4); }
-								else{
-									restaurant.noOfReviews = noOfReviews[0]["COUNT(*)"];
-									finalRestaurants.push(restaurant);
-								}
-							});
-							var done = this.async();
-							setTimeout(done, 50);
-						},
-						function (notAborted2) {
-							console.log(JSON.stringify(finalRestaurants));
-							connection.end();
-							res.render("restaurants/index",{restaurants: finalRestaurants, location: location});
+								var query3 = "SELECT COUNT(*) FROM review WHERE Restaurant_id =" + restaurant.Restaurant_id;
+								connection.query(query3, function (err4, noOfReviews, index) {
+									if (err4) { console.log(err4); }
+									else {
+										restaurant.noOfReviews = noOfReviews[0]["COUNT(*)"];
+										finalRestaurants.push(restaurant);
+									}
+								});
+								var done = this.async();
+								setTimeout(done, 50);
+							},
+								function (notAborted2) {
+									console.log(JSON.stringify(finalRestaurants));
+									connection.end();
+									res.render("restaurants/index", { restaurants: finalRestaurants, location: location });
+								});
 						});
-					});
 				}
 			});
 		}
@@ -231,20 +238,21 @@ app.post("/restaurants", isLoggedIn, function (req, res) {
 	var City = req.body.restaurant.City;
 	var Area = req.body.restaurant.Area;
 	var connection = mysql.createConnection(connectionObject);
-	connection.connect(function (err1) {
+	connection.connect(async (err1) => {
 		if (err1) { console.log(err1); }
 		else {
+			// first insert into restaurant table then insert into user
 			var values = [[Name, Logo, Description, Rating, City, Area]];
 			var queryFields = "Name, Logo, Description, Rating, City, Area";
 			var query = "INSERT INTO restaurant(" + queryFields + ") VALUES ?";
-			connection.query(query, [values], function (err2, result, fields) {
-				if(err2) { console.log(err2); }
-				else {
-					console.log("Restaurant created");
-					connection.end();
-					res.redirect("/");
-				}
-			});
+			await exeQuer(connection, query, values)
+			// then inset new user
+			values = [[Name, " ",121, `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
+			queryFields = "Fname, Lname,Mobile, Email, Password, Address";
+			query = "INSERT INTO user(" + queryFields + ") VALUES ?";
+			await exeQuer(connection, query, values)
+			connection.end();
+			res.redirect("/");
 		}
 	});
 });
@@ -258,7 +266,7 @@ app.get("/restaurants/:id", function (req, res) {
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
-			var query1 = "SELECT * FROM restaurant where Restaurant_id = "+restaurantId;
+			var query1 = "SELECT * FROM restaurant where Restaurant_id = " + restaurantId;
 			connection.query(query1, function (err2, restaurant, fields1) {
 
 				if (err2) { console.log(err2); }
@@ -267,28 +275,28 @@ app.get("/restaurants/:id", function (req, res) {
 
 					var query2 = "SELECT * FROM menu WHERE Restaurant_id = " + restaurant.Restaurant_id;
 					connection.query(query2, function (err3, menus, fields2) {
-						if(err3) { console.log(err3); }
-						else{
+						if (err3) { console.log(err3); }
+						else {
 							restaurant.menus = menus;
 							forEach(restaurant.menus, function (menu, index) {
 
 								var query3 = "SELECT * FROM menu_item WHERE Menu_id = " + menu.Menu_id;
 								connection.query(query3, function (err4, menuItems, fields3) {
 									if (err4) { console.log(err4) } else {
-											restaurant.menus[index].menuItems = menuItems;
-										}
+										restaurant.menus[index].menuItems = menuItems;
+									}
 								});
 								var done = this.async();
 								setTimeout(done, 50);
 							}, function (notAborted) {
 
-								var query4 = "SELECT r.*,DATE_FORMAT(r.Review_date,'%d/%m/%Y') AS niceDate, u.Fname  FROM review r, USER u WHERE r.Restaurant_id = "+restaurant.Restaurant_id+" and r.User_id = u.User_id";
+								var query4 = "SELECT r.*,DATE_FORMAT(r.Review_date,'%d/%m/%Y') AS niceDate, u.Fname  FROM review r, USER u WHERE r.Restaurant_id = " + restaurant.Restaurant_id + " and r.User_id = u.User_id";
 								connection.query(query4, function (err5, reviews, fields4) {
 									if (err5) { console.log(err5) } else {
 										restaurant.reviews = reviews;
 										console.log(JSON.stringify(restaurant));
 										connection.end();
-										res.render("restaurants/show", {restaurant:restaurant});
+										res.render("restaurants/show", { restaurant: restaurant });
 									}
 								});
 							});
@@ -308,17 +316,17 @@ app.get("/restaurants/:id", function (req, res) {
 app.get("/restaurants/:id/reviews/new", isLoggedIn, function (req, res) {
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
-		if (err1) { console.log("1"+err1); }
+		if (err1) { console.log("1" + err1); }
 		else {
-			var query = "SELECT * FROM restaurant WHERE Restaurant_id = "+req.params.id;
+			var query = "SELECT * FROM restaurant WHERE Restaurant_id = " + req.params.id;
 			connection.query(query, function (err2, Restaurants, fields) {
 				if (err2) { console.log(err2); } else {
-					if(Restaurants.length<=0){
+					if (Restaurants.length <= 0) {
 						res.send("restaurant does not exist");
 					} else {
 						console.log(Restaurants[0]);
 						connection.end();
-						res.render("reviews/new",{restaurant:Restaurants[0], user: req.session.user});
+						res.render("reviews/new", { restaurant: Restaurants[0], user: req.session.user });
 					}
 				}
 			});
@@ -341,12 +349,12 @@ app.post("/restaurants/:id/reviews", isLoggedIn, function (req, res) {
 		else {
 
 			var queryFields = "Review_date, Review, Rating, User_id, Restaurant_id";
-			var query = "INSERT INTO review("+queryFields+") VALUES (CURDATE(), '"+Review+"', "+Rating+", "+UserId+", "+RestaurantId+")";
+			var query = "INSERT INTO review(" + queryFields + ") VALUES (CURDATE(), '" + Review + "', " + Rating + ", " + UserId + ", " + RestaurantId + ")";
 			connection.query(query, function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("review created");
 					connection.end();
-					res.redirect("/restaurants/"+RestaurantId);
+					res.redirect("/restaurants/" + RestaurantId);
 				}
 			});
 		}
@@ -365,15 +373,15 @@ app.get("/restaurants/:id/menus/new", isLoggedIn, function (req, res) {
 		if (err1) { console.log(err1); }
 		else {
 
-			var query = "SELECT * FROM restaurant WHERE Restaurant_id = "+req.params.id;
+			var query = "SELECT * FROM restaurant WHERE Restaurant_id = " + req.params.id;
 			connection.query(query, function (err2, Restaurants, fields) {
 				if (err2) { console.log(err2); } else {
-					if(Restaurants.length<=0){
+					if (Restaurants.length <= 0) {
 						res.send("restaurant does not exist");
 					} else {
 						console.log(Restaurants[0]);
 						connection.end();
-						res.render("menus/new",{restaurant:Restaurants[0]});
+						res.render("menus/new", { restaurant: Restaurants[0] });
 					}
 				}
 			});
@@ -394,13 +402,13 @@ app.post("/restaurants/:id/menus", isLoggedIn, function (req, res) {
 
 			var values = [[menuName, RestaurantId]];
 			var queryFields = "Menu_name, Restaurant_id";
-			var query = "INSERT INTO menu("+queryFields+") VALUES ?";
+			var query = "INSERT INTO menu(" + queryFields + ") VALUES ?";
 
 			connection.query(query, [values], function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("menu created");
 					connection.end();
-					res.redirect("/restaurants/"+RestaurantId);
+					res.redirect("/restaurants/" + RestaurantId);
 				}
 			});
 		}
@@ -418,12 +426,12 @@ app.delete("/restaurants/:restaurantId/menus/:menuId", isLoggedIn, function (req
 		if (err1) { console.log(err1); }
 		else {
 
-			query = "DELETE FROM menu WHERE Menu_id="+menuId;
+			query = "DELETE FROM menu WHERE Menu_id=" + menuId;
 			connection.query(query, function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("menu deleted");
 					connection.end();
-					res.redirect("/restaurants/"+restaurantId);
+					res.redirect("/restaurants/" + restaurantId);
 				}
 			});
 		}
@@ -445,22 +453,22 @@ app.get("/restaurants/:restaurantId/menus/:menuId/menu_items/new", isLoggedIn, f
 		if (err1) { console.log(err1); }
 		else {
 
-			var query1 = "SELECT * FROM restaurant WHERE Restaurant_id = "+restaurantId;
+			var query1 = "SELECT * FROM restaurant WHERE Restaurant_id = " + restaurantId;
 			connection.query(query1, function (err2, Restaurants, fields) {
 				if (err2) { console.log(err2); } else {
-					if(Restaurants.length<=0){
+					if (Restaurants.length <= 0) {
 						res.send("restaurant does not exist");
 					} else {
 
 						var query2 = "SELECT * FROM menu WHERE Menu_id = " + menuId;
 						connection.query(query2, function (err3, menus, fields) {
-							if(err3){ console.log(err3); } else {
-								if(menus.length <= 0){
+							if (err3) { console.log(err3); } else {
+								if (menus.length <= 0) {
 									connection.end();
 									res.send("menu does not exist");
 								} else {
 									connection.end();
-									res.render("menu_items/new",{restaurant:Restaurants[0], menu:menus[0]});
+									res.render("menu_items/new", { restaurant: Restaurants[0], menu: menus[0] });
 								}
 							}
 						});
@@ -480,23 +488,23 @@ app.post("/restaurants/:restaurantId/menus/:menuId/menu_items", isLoggedIn, func
 	var Name = req.body.menuItem.Name;
 	var Image = req.body.menuItem.Image;
 	var Veg = req.body.menuItem.Veg;
-	console.log("diet-"+Veg);
+	console.log("diet-" + Veg);
 	var Price = req.body.menuItem.Price;
 	var Serves = req.body.menuItem.Serves;
 
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
-		if(err1){ console.log(err1); }
-		else{
-			var values =[[Name, Image, Veg, Price, Serves, menuId]];
+		if (err1) { console.log(err1); }
+		else {
+			var values = [[Name, Image, Veg, Price, Serves, menuId]];
 			var queryFields = "Name, Image, Veg, Price, Serves, Menu_id";
-			var query = "INSERT INTO menu_item("+queryFields+") VALUES ?";
+			var query = "INSERT INTO menu_item(" + queryFields + ") VALUES ?";
 
 			connection.query(query, [values], function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("menu_item added");
 					connection.end();
-					res.redirect("/restaurants/"+restaurantId);
+					res.redirect("/restaurants/" + restaurantId);
 				}
 			});
 		}
@@ -515,12 +523,12 @@ app.delete("/restaurants/:restaurantId/menus/:menuId/menu_items/:menuItemId", fu
 		if (err1) { console.log(err1); }
 		else {
 
-			query = "DELETE FROM menu_item WHERE Menu_item_id="+menuItemId;
+			query = "DELETE FROM menu_item WHERE Menu_item_id=" + menuItemId;
 			connection.query(query, function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("menu item deleted");
 					connection.end();
-					res.redirect("/restaurants/"+restaurantId);
+					res.redirect("/restaurants/" + restaurantId);
 				}
 			});
 		}
@@ -531,8 +539,8 @@ app.delete("/restaurants/:restaurantId/menus/:menuId/menu_items/:menuItemId", fu
 // =================
 //   AUTH FUNCTION
 // =================
-function isLoggedIn (req, res, next) {
-	if(req.session.user){
+function isLoggedIn(req, res, next) {
+	if (req.session.user) {
 		return next();
 	} else {
 		res.redirect("/login");
