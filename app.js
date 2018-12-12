@@ -1,17 +1,17 @@
-var express = require("express");
-var app = express();
-var bodyParser = require("body-parser");
-var methodOverride = require("method-override");
-var mysql = require("mysql");
+var express = require("express")
+var app = express()
+var bodyParser = require("body-parser")
+var methodOverride = require("method-override")
+var mysql = require("mysql")
 var connectionObject = {
 	host: "localhost",
 	user: 'root',
 	password: 'pageupto123',
-	database: 'foodpp',
+	database: 'munch',
 	port: 3306
 };
-var session = require("express-session");
-var forEach = require('async-foreach').forEach;
+var session = require("express-session")
+var forEach = require('async-foreach').forEach
 
 // =====================
 //      APP CONFIG
@@ -247,12 +247,12 @@ app.post("/restaurants", isLoggedIn, function (req, res) {
 			var query = "INSERT INTO restaurant(" + queryFields + ") VALUES ?";
 			await exeQuer(connection, query, values)
 			// then inset new user
-			values = [[Name, " ",121, `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
+			values = [[Name, " ",20*Math.random(), `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
 			queryFields = "Fname, Lname,Mobile, Email, Password, Address";
 			query = "INSERT INTO user(" + queryFields + ") VALUES ?";
 			await exeQuer(connection, query, values)
 			connection.end();
-			res.redirect("/");
+			// res.redirect("/");
 		}
 	});
 });
@@ -504,7 +504,7 @@ app.post("/restaurants/:restaurantId/menus/:menuId/menu_items", isLoggedIn, func
 				if (err2) { console.log(err2); } else {
 					console.log("menu_item added");
 					connection.end();
-					res.redirect("/restaurants/" + restaurantId);
+					// res.redirect("/restaurants/" + restaurantId);
 				}
 			});
 		}
