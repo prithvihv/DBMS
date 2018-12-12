@@ -7,7 +7,7 @@ var connectionObject = {
 	host: "localhost",
 	user: 'root',
 	password: 'pageupto123',
-	database: 'munch',
+	database: 'foodpp',
 	port: 3306
 };
 var session = require("express-session")
@@ -247,7 +247,7 @@ app.post("/restaurants", isLoggedIn, function (req, res) {
 			var query = "INSERT INTO restaurant(" + queryFields + ") VALUES ?";
 			await exeQuer(connection, query, values)
 			// then inset new user
-			values = [[Name, " ",20*Math.random(), `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
+			values = [[Name, " ", 20 * Math.random(), `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
 			queryFields = "Fname, Lname,Mobile, Email, Password, Address";
 			query = "INSERT INTO user(" + queryFields + ") VALUES ?";
 			await exeQuer(connection, query, values)
