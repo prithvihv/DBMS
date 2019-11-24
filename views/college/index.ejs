@@ -8,10 +8,10 @@
         <%=location.city +" : "+ location.area %>
       </h1>
       <p>We have located
-        <%=restaurants.length%> restaurants near you! :D</p>
+        <%=colleges.length%> colleges near you! :D</p>
       <% if( currentUser && currentUser["Fname"] == "Admin") { %>
       <p>
-        <a href="/restaurants/new" class="large ui teal button">Add new restaurant</a>
+        <a href="/college/new" class="large ui teal button">Add new restaurant</a>
       </p>
       <% } %>
     </div>
@@ -19,8 +19,8 @@
 
 
   <div class="ui row link red divided cards">
-    <% restaurants.forEach( function(element, index) { %>
-    <a class="card" href="/restaurants/<%=element.Restaurant_id%>">
+    <% colleges.forEach( function(element, index) { %>
+    <a class="card" href="/college/<%=element.College_id%>">
       <div class="image">
         <img src="<%=element.Logo%>">
       </div>

@@ -3,24 +3,24 @@
 
 <div class="bigger ui segment grid">
 
-	<div class="rlogo ui centered row"><img class="ui medium rounded image" src="<%=restaurant.Logo%>"></div>
+	<div class="rlogo ui centered row"><img class="ui medium rounded image" src="<%=college.Logo%>"></div>
 	<div class="ui centered row">
 		<div class="ui centered segment vertically divided grid">
 			<div class="ui centered row">
 				<h1>
-					<%=restaurant.Name%>
+					<%=college.Name%>
 				</h1>
 			</div>
 			<div class="ui centered row">
 				<p>
-					<%=restaurant.Description%>
+					<%=college.Description%>
 				</p>
 			</div>
 			<div class="ui centered row">
-				<% for(var i=0; i<restaurant.Rating; i++) {%>
+				<% for(var i=0; i<college.Rating; i++) {%>
 				<span class="fa fa-star checked"></span>
 				<% } %>
-				<% for(var i=0; i<(5-restaurant.Rating); i++) { %>
+				<% for(var i=0; i<(5-college.Rating); i++) { %>
 				<span class="fa fa-star"></span>
 				<% } %>
 			</div>
@@ -35,18 +35,20 @@
 
 <div class="ui main text segment container">
 
-	<% restaurant.menus.forEach( function(menu, index1) { %>
+	<% college.department.forEach( function(department, index1) { %>
 	<h3 class="ui dividing header">
-		<%=menu.Menu_name%>
+		<%=department.Department_Name%>
 
-		<% if(currentUser && ( currentUser.Fname == restaurant.Name || currentUser.Fname == "Admin" ) ){ %>
+		<% if(currentUser && ( currentUser.Fname == college.Name || currentUser.Fname == "Admin" ) ){ %>
 
-		<form action="/restaurants/<%=restaurant.Restaurant_id%>/menus/<%=menu.Menu_id%>/menu_items/new" method="GET" style="display:inline">
+		<form action="/restaurants/<%=college.Restaurant_id%>/menus/<%=department.Menu_id%>/menu_items/new" method="GET"
+			style="display:inline">
 			<button class="ui green button">ADD NEW ITEM</button>
 		</form>
 
-		<form action="/restaurants/<%=restaurant.Restaurant_id%>/menus/<%=menu.Menu_id%>?_method=DELETE" method="POST" style="display:inline">
-			<button class="ui red button">DELETE MENU</button>
+		<form action="/restaurants/<%=college.Restaurant_id%>/menus/<%=department.Menu_id%>?_method=DELETE"
+			method="POST" style="display:inline">
+			<button class="ui red button">DELETE department</button>
 		</form>
 		<% } %>
 
@@ -55,19 +57,20 @@
 	<div class="ui top attached segment">
 		<div class="ui divided items">
 
-			<% menu.menuItems.forEach( function(menuItem, index2) { %>
+			<% department.course.forEach( function(course, index2) { %>
 			<div class="item">
 
 				<div class="ui small image">
-					<img src="<%=menuItem.Image%>">
+					<img src="<%=course.Image%>">
 				</div>
 
 				<div class="content pro">
 					<p class="header">
-						<%=menuItem.Name%>
-						<% if( currentUser && ( currentUser.Fname == restaurant.Name || currentUser.Fname == "Admin" ) ){ %>
-						<form action="/restaurants/<%=restaurant.Restaurant_id%>/menus/<%=menu.Menu_id%>/menu_items/<%=menuItem.Menu_item_id%>?_method=DELETE"
-						 method="POST" style="display:inline">
+						<%=course.Name%>
+						<% if( currentUser && ( currentUser.Fname == college.Name || currentUser.Fname == "Admin" ) ){ %>
+						<form
+							action="/restaurants/<%=college.Restaurant_id%>/menus/<%=department.Menu_id%>/menu_items/<%=course.Menu_item_id%>?_method=DELETE"
+							method="POST" style="display:inline">
 							<button class="ui red button">DELETE ITEM</button>
 						</form>
 						<% }%>
@@ -75,13 +78,13 @@
 					</p>
 					<div class="description">
 						<p>Price:&nbsp;&nbsp;&nbsp;<span><i class="fa fa-inr" aria-hidden="true"></i></span>
-							<%=menuItem.Price%>
+							<%=course.Price%>
 						</p>
 						<p><i class="fa fa-users" aria-hidden="true"></i>&nbsp;&nbsp;Serves:&nbsp;&nbsp;
-							<%=menuItem.Serves%> people</p>
+							<%=course.Serves%> people</p>
 					</div>
 					<div class="extra">
-						<% if(menuItem.Veg == 0){ %>
+						<% if(course.Veg == 0){ %>
 						<div class="non_veg">
 							<span class="red dot">●</span>Non Veg
 						</div>
@@ -100,8 +103,9 @@
 
 	</div>
 	<% });%>
-	<% if (  currentUser && ( currentUser.Fname == restaurant.Name || currentUser.Fname == "Admin")  ) { %>
-	<a id="new_menu" href="/restaurants/<%=restaurant.Restaurant_id%>/menus/new" class="ui green button"> Add a new menu!
+	<% if (  currentUser && ( currentUser.Fname == college.Name || currentUser.Fname == "Admin")  ) { %>
+	<a id="new_menu" href="/restaurants/<%=college.Restaurant_id%>/menus/new" class="ui green button"> Add a new
+		department!
 	</a>
 	<% } %>
 </div>
@@ -112,7 +116,7 @@
 
 
 	<div class="ui divided items">
-		<% restaurant.reviews.forEach(function (review, index2) { %>
+		<% college.reviews.forEach(function (review, index2) { %>
 		<div class="item">
 			<div class="content">
 				<!-- <div class="header">
@@ -140,8 +144,8 @@
 		</div>
 		<% }); %>
 	</div>
-	<% if( currentUser && ( currentUser.Fname == restaurant.Name.replace(/ +/g, "") || currentUser.Fname == "Admin"  ) ) { %>
-	<a href="/restaurants/<%=restaurant.Restaurant_id%>/reviews/new" class="ui green button">
+	<% if( currentUser && ( currentUser.Fname == college.Name.replace(/ +/g, "") || currentUser.Fname == "Admin"  ) ) { %>
+	<a href="/restaurants/<%=college.Restaurant_id%>/reviews/new" class="ui green button">
 		Leave a review!
 	</a>
 	<% } %>

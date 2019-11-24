@@ -7,7 +7,7 @@ var connectionObject = {
 	host: "localhost",
 	user: 'root',
 	password: 'pageupto123',
-	database: 'foodpp',
+	database: 'patashala',
 	port: 3306
 };
 var session = require("express-session")
@@ -48,7 +48,7 @@ app.get("/", function (req, res) {
 	connection.connect(function (err) {
 		if (err) { console.log(err) }
 		else {
-			connection.query("SELECT DISTINCT City, Area FROM restaurant", function (err2, locations, fields) {
+			connection.query("SELECT DISTINCT City, Area FROM college", function (err2, locations, fields) {
 				if (err2) { console.log(err2) }
 				else {
 					var cities = new Set();
@@ -66,7 +66,7 @@ app.get("/", function (req, res) {
 });
 
 app.post("/", function (req, res) {
-	res.redirect("/restaurants/" + req.body.city + "/" + req.body.area + "");
+	res.redirect("/college/" + req.body.city + "/" + req.body.area + "");
 });
 
 // -------
@@ -164,10 +164,10 @@ app.get("/logout", function (req, res) {
 // ======================
 
 // INDEX - show all restaurants
-app.get("/restaurants/:city/:area", function (req, res) {
+app.get("/college/:city/:area", function (req, res) {
 
-	var finalRestaurants = [];
-	var semiFinalRestaurants = [];
+	var finalColleges = [];
+	var semifinalColleges = [];
 	var city = req.params.city;
 	var area = req.params.area;
 	var location = { city: city, area: area };
@@ -177,20 +177,20 @@ app.get("/restaurants/:city/:area", function (req, res) {
 
 		if (err1) { console.log(err1); }
 		else {
-			var query1 = "SELECT * FROM restaurant where City = '" + city + "' and Area = '" + area + "'";
-			connection.query(query1, function (err2, restaurants, fields) {
+			var query1 = "SELECT * FROM college where City = '" + city + "' and Area = '" + area + "'";
+			connection.query(query1, function (err2, colleges, fields) {
 
 				if (err2) { console.log(err2); }
 				else {
 
-					forEach(restaurants, function (restaurant, index) {
+					forEach(colleges, function (college, index) {
 
-						var query2 = "SELECT Menu_name FROM menu WHERE Restaurant_id = " + restaurant.Restaurant_id;
+						var query2 = "SELECT Department_name FROM department WHERE College_id = " + college.College_id;
 						connection.query(query2, function (err3, menuNames, index) {
 							if (err3) { console.log(err3); }
 							else {
-								restaurant.menuNames = menuNames;
-								semiFinalRestaurants.push(restaurant);
+								college.menuNames = menuNames;
+								semifinalColleges.push(college);
 							}
 						});
 						var done = this.async();
@@ -198,23 +198,23 @@ app.get("/restaurants/:city/:area", function (req, res) {
 					},
 						function (notAborted) {
 
-							forEach(semiFinalRestaurants, function (restaurant, index) {
+							forEach(semifinalColleges, function (college, index) {
 
-								var query3 = "SELECT COUNT(*) FROM review WHERE Restaurant_id =" + restaurant.Restaurant_id;
+								var query3 = "SELECT COUNT(*) FROM review WHERE College_id =" + college.College_id;
 								connection.query(query3, function (err4, noOfReviews, index) {
 									if (err4) { console.log(err4); }
 									else {
-										restaurant.noOfReviews = noOfReviews[0]["COUNT(*)"];
-										finalRestaurants.push(restaurant);
+										college.noOfReviews = noOfReviews[0]["COUNT(*)"];
+										finalColleges.push(college);
 									}
 								});
 								var done = this.async();
 								setTimeout(done, 50);
 							},
 								function (notAborted2) {
-									console.log(JSON.stringify(finalRestaurants));
+									console.log(JSON.stringify(finalColleges));
 									connection.end();
-									res.render("restaurants/index", { restaurants: finalRestaurants, location: location });
+									res.render("college/index", { colleges: finalColleges, location: location });
 								});
 						});
 				}
@@ -224,19 +224,19 @@ app.get("/restaurants/:city/:area", function (req, res) {
 });
 
 // NEW - form to create a new restaurant
-app.get("/restaurants/new", isLoggedIn, function (req, res) {
-	res.render("restaurants/new");
+app.get("/college/new", isLoggedIn, function (req, res) {
+	res.render("college/new");
 });
 
 // CREATE - creates a new restaurants
-app.post("/restaurants", isLoggedIn, function (req, res) {
+app.post("/college", isLoggedIn, function (req, res) {
 
-	var Name = req.body.restaurant.Name;
-	var Logo = req.body.restaurant.Logo;
-	var Description = req.body.restaurant.Description;
-	var Rating = req.body.restaurant.Rating;
-	var City = req.body.restaurant.City;
-	var Area = req.body.restaurant.Area;
+	var Name = req.body.college.Name;
+	var Logo = req.body.college.Logo;
+	var Description = req.body.college.Description;
+	var Rating = req.body.college.Rating;
+	var City = req.body.college.City;
+	var Area = req.body.college.Area;
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(async (err1) => {
 		if (err1) { console.log(err1); }
@@ -244,21 +244,21 @@ app.post("/restaurants", isLoggedIn, function (req, res) {
 			// first insert into restaurant table then insert into user
 			var values = [[Name, Logo, Description, Rating, City, Area]];
 			var queryFields = "Name, Logo, Description, Rating, City, Area";
-			var query = "INSERT INTO restaurant(" + queryFields + ") VALUES ?";
+			var query = "INSERT INTO college(" + queryFields + ") VALUES ?";
 			await exeQuer(connection, query, values)
 			// then inset new user
-			values = [[Name, " ", 20 * Math.random(), `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
-			queryFields = "Fname, Lname,Mobile, Email, Password, Address";
-			query = "INSERT INTO user(" + queryFields + ") VALUES ?";
-			await exeQuer(connection, query, values)
+			// values = [[Name, " ", 20 * Math.random(), `${Name}@gmail.com`, Name, `${Area} + ${City}`]];
+			// queryFields = "Fname, Lname,Mobile, Email, Password, Address";
+			// query = "INSERT INTO user(" + queryFields + ") VALUES ?";
+			// await exeQuer(connection, query, values)
 			connection.end();
-			// res.redirect("/");
+			res.redirect("/");
 		}
 	});
 });
 
 // SHOW - shows more information about one restaurants
-app.get("/restaurants/:id", function (req, res) {
+app.get("/college/:id", function (req, res) {
 
 	restaurantId = req.params.id;
 
@@ -266,37 +266,37 @@ app.get("/restaurants/:id", function (req, res) {
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
-			var query1 = "SELECT * FROM restaurant where Restaurant_id = " + restaurantId;
-			connection.query(query1, function (err2, restaurant, fields1) {
+			var query1 = "SELECT * FROM college where College_id = " + restaurantId;
+			connection.query(query1, function (err2, college, fields1) {
 
 				if (err2) { console.log(err2); }
 				else {
-					restaurant = restaurant[0];
+					college = college[0];
 
-					var query2 = "SELECT * FROM menu WHERE Restaurant_id = " + restaurant.Restaurant_id;
-					connection.query(query2, function (err3, menus, fields2) {
+					var query2 = "SELECT * FROM department WHERE College_id = " + college.College_id;
+					connection.query(query2, function (err3, department, fields2) {
 						if (err3) { console.log(err3); }
 						else {
-							restaurant.menus = menus;
-							forEach(restaurant.menus, function (menu, index) {
+							college.department = department;
+							forEach(college.department, function (menu, index) {
 
-								var query3 = "SELECT * FROM menu_item WHERE Menu_id = " + menu.Menu_id;
-								connection.query(query3, function (err4, menuItems, fields3) {
+								var query3 = "SELECT * FROM course WHERE department = " + menu.Department_id;
+								connection.query(query3, function (err4, course, fields3) {
 									if (err4) { console.log(err4) } else {
-										restaurant.menus[index].menuItems = menuItems;
+										college.department[index].course = course;
 									}
 								});
 								var done = this.async();
 								setTimeout(done, 50);
 							}, function (notAborted) {
 
-								var query4 = "SELECT r.*,DATE_FORMAT(r.Review_date,'%d/%m/%Y') AS niceDate, u.Fname  FROM review r, USER u WHERE r.Restaurant_id = " + restaurant.Restaurant_id + " and r.User_id = u.User_id";
+								var query4 = "SELECT r.*,DATE_FORMAT(r.Review_date,'%d/%m/%Y') AS niceDate, u.Fname  FROM review r, USER u WHERE r.College_id = " + college.College_id + " and r.User_id = u.User_id";
 								connection.query(query4, function (err5, reviews, fields4) {
 									if (err5) { console.log(err5) } else {
-										restaurant.reviews = reviews;
-										console.log(JSON.stringify(restaurant));
+										college.reviews = reviews;
+										console.log(JSON.stringify(college));
 										connection.end();
-										res.render("restaurants/show", { restaurant: restaurant });
+										res.render("college/show", { college: college });
 									}
 								});
 							});
