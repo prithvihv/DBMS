@@ -280,7 +280,7 @@ app.get("/college/:id", function (req, res) {
 							college.department = department;
 							forEach(college.department, function (menu, index) {
 
-								var query3 = "SELECT * FROM course WHERE department = " + menu.Department_id;
+								var query3 = "SELECT * FROM course WHERE Department_id = " + menu.Department_id;
 								connection.query(query3, function (err4, course, fields3) {
 									if (err4) { console.log(err4) } else {
 										college.department[index].course = course;
@@ -296,6 +296,7 @@ app.get("/college/:id", function (req, res) {
 										college.reviews = reviews;
 										console.log(JSON.stringify(college));
 										connection.end();
+										console.log(college.department[0].course)
 										res.render("college/show", { college: college });
 									}
 								});
@@ -313,20 +314,20 @@ app.get("/college/:id", function (req, res) {
 // =================
 
 // NEW - form to create a new review for the particular restaurant
-app.get("/restaurants/:id/reviews/new", isLoggedIn, function (req, res) {
+app.get("/college/:id/reviews/new", isLoggedIn, function (req, res) {
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
 		if (err1) { console.log("1" + err1); }
 		else {
-			var query = "SELECT * FROM restaurant WHERE Restaurant_id = " + req.params.id;
-			connection.query(query, function (err2, Restaurants, fields) {
+			var query = "SELECT * FROM college WHERE College_id = " + req.params.id;
+			connection.query(query, function (err2, college, fields) {
 				if (err2) { console.log(err2); } else {
-					if (Restaurants.length <= 0) {
+					if (college.length <= 0) {
 						res.send("restaurant does not exist");
 					} else {
-						console.log(Restaurants[0]);
+						console.log(college[0]);
 						connection.end();
-						res.render("reviews/new", { restaurant: Restaurants[0], user: req.session.user });
+						res.render("reviews/new", { college: college[0], user: req.session.user });
 					}
 				}
 			});
@@ -335,26 +336,26 @@ app.get("/restaurants/:id/reviews/new", isLoggedIn, function (req, res) {
 });
 
 // CREATE - creates a new review
-app.post("/restaurants/:id/reviews", isLoggedIn, function (req, res) {
+app.post("/college/:id/reviews", isLoggedIn, function (req, res) {
 
 	var Review = req.body.review.Review;
 	var Rating = req.body.review.Rating;
 	var UserId = req.session.user.User_id;
 
-	var RestaurantId = req.params.id;
+	var College_id = req.params.id;
 
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
 
-			var queryFields = "Review_date, Review, Rating, User_id, Restaurant_id";
-			var query = "INSERT INTO review(" + queryFields + ") VALUES (CURDATE(), '" + Review + "', " + Rating + ", " + UserId + ", " + RestaurantId + ")";
+			var queryFields = "Review_date, Review, Rating, User_id, College_id";
+			var query = "INSERT INTO review(" + queryFields + ") VALUES (CURDATE(), '" + Review + "', " + Rating + ", " + UserId + ", " + College_id + ")";
 			connection.query(query, function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("review created");
 					connection.end();
-					res.redirect("/restaurants/" + RestaurantId);
+					res.redirect("/college/" + College_id);
 				}
 			});
 		}
@@ -366,22 +367,22 @@ app.post("/restaurants/:id/reviews", isLoggedIn, function (req, res) {
 // ================
 
 // NEW - form to create a new menu for the particular restaurant
-app.get("/restaurants/:id/menus/new", isLoggedIn, function (req, res) {
+app.get("/college/:id/department/new", isLoggedIn, function (req, res) {
 
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
 
-			var query = "SELECT * FROM restaurant WHERE Restaurant_id = " + req.params.id;
-			connection.query(query, function (err2, Restaurants, fields) {
+			var query = "SELECT * FROM college WHERE College_id = " + req.params.id;
+			connection.query(query, function (err2, College, fields) {
 				if (err2) { console.log(err2); } else {
-					if (Restaurants.length <= 0) {
+					if (College.length <= 0) {
 						res.send("restaurant does not exist");
 					} else {
-						console.log(Restaurants[0]);
+						console.log(College[0]);
 						connection.end();
-						res.render("menus/new", { restaurant: Restaurants[0] });
+						res.render("department/new", { college: College[0] });
 					}
 				}
 			});
@@ -390,25 +391,27 @@ app.get("/restaurants/:id/menus/new", isLoggedIn, function (req, res) {
 });
 
 // CREATE - creates a new menu
-app.post("/restaurants/:id/menus", isLoggedIn, function (req, res) {
+app.post("/college/:id/department", isLoggedIn, function (req, res) {
 
-	var menuName = req.body.menu.Name;
-	var RestaurantId = req.params.id;
+	var departName = req.body.department.Department_name;
+	var hod = req.body.department.HOD;
+	var description = req.body.department.Description;
+	var collegeid = req.params.id;
 
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
 
-			var values = [[menuName, RestaurantId]];
-			var queryFields = "Menu_name, Restaurant_id";
-			var query = "INSERT INTO menu(" + queryFields + ") VALUES ?";
+			var values = [[departName, hod, collegeid, description]];
+			var queryFields = "Department_name,HOD ,College_id , Description";
+			var query = "INSERT INTO department(" + queryFields + ") VALUES ?";
 
 			connection.query(query, [values], function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("menu created");
 					connection.end();
-					res.redirect("/restaurants/" + RestaurantId);
+					res.redirect("/college/" + collegeid);
 				}
 			});
 		}
@@ -443,32 +446,32 @@ app.delete("/restaurants/:restaurantId/menus/:menuId", isLoggedIn, function (req
 // ===================
 
 // NEW - form to create a new menu_item for a particular restaurant
-app.get("/restaurants/:restaurantId/menus/:menuId/menu_items/new", isLoggedIn, function (req, res) {
+app.get("/college/:collegeid/department/:departmenid/course/new", isLoggedIn, function (req, res) {
 
-	var restaurantId = req.params.restaurantId;
-	var menuId = req.params.menuId;
+	var collegeid = req.params.collegeid;
+	var departmentid = req.params.departmenid;
 
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
 
-			var query1 = "SELECT * FROM restaurant WHERE Restaurant_id = " + restaurantId;
-			connection.query(query1, function (err2, Restaurants, fields) {
+			var query1 = "SELECT * FROM college WHERE College_id = " + collegeid;
+			connection.query(query1, function (err2, colleges, fields) {
 				if (err2) { console.log(err2); } else {
-					if (Restaurants.length <= 0) {
+					if (colleges.length <= 0) {
 						res.send("restaurant does not exist");
 					} else {
 
-						var query2 = "SELECT * FROM menu WHERE Menu_id = " + menuId;
-						connection.query(query2, function (err3, menus, fields) {
+						var query2 = "SELECT * FROM department WHERE Department_id = " + departmentid;
+						connection.query(query2, function (err3, departments, fields) {
 							if (err3) { console.log(err3); } else {
-								if (menus.length <= 0) {
+								if (departments.length <= 0) {
 									connection.end();
 									res.send("menu does not exist");
 								} else {
 									connection.end();
-									res.render("menu_items/new", { restaurant: Restaurants[0], menu: menus[0] });
+									res.render("course/new", { college: colleges[0], department: departments[0] });
 								}
 							}
 						});
@@ -480,31 +483,29 @@ app.get("/restaurants/:restaurantId/menus/:menuId/menu_items/new", isLoggedIn, f
 });
 
 // CREATE - creates a new menu_item for a particular restaurant
-app.post("/restaurants/:restaurantId/menus/:menuId/menu_items", isLoggedIn, function (req, res) {
+app.post("/college/:collegeid/department/:departmenid/course", isLoggedIn, function (req, res) {
 
-	var restaurantId = req.params.restaurantId;
-	var menuId = req.params.menuId;
+	var collegeid = req.params.collegeid;
+	var departmentid = req.params.departmenid;
 
-	var Name = req.body.menuItem.Name;
-	var Image = req.body.menuItem.Image;
-	var Veg = req.body.menuItem.Veg;
-	console.log("diet-" + Veg);
-	var Price = req.body.menuItem.Price;
-	var Serves = req.body.menuItem.Serves;
+	var Name = req.body.course.Name;
+	var Description = req.body.course.Description;
+	var CreditPoints = req.body.course.CreditPoints;
+	var Duration = req.body.course.Duration;
 
 	var connection = mysql.createConnection(connectionObject);
 	connection.connect(function (err1) {
 		if (err1) { console.log(err1); }
 		else {
-			var values = [[Name, Image, Veg, Price, Serves, menuId]];
-			var queryFields = "Name, Image, Veg, Price, Serves, Menu_id";
-			var query = "INSERT INTO menu_item(" + queryFields + ") VALUES ?";
+			var values = [[Name, Description, CreditPoints, Duration, departmentid]];
+			var queryFields = "Name ,Description ,CreditPoints ,Duration,Department_id";
+			var query = "INSERT INTO course(" + queryFields + ") VALUES ?";
 
 			connection.query(query, [values], function (err2, results, fields) {
 				if (err2) { console.log(err2); } else {
 					console.log("menu_item added");
 					connection.end();
-					// res.redirect("/restaurants/" + restaurantId);
+					res.redirect("/college/" + collegeid);
 				}
 			});
 		}

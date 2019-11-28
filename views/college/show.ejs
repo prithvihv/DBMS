@@ -37,19 +37,16 @@
 
 	<% college.department.forEach( function(department, index1) { %>
 	<h3 class="ui dividing header">
-		<%=department.Department_Name%>
+		<%=department.Department_name%> <br>
+		<span> HOD: <%=department.HOD %> </span> <br>
+		<span> Description: <%=department.Description %> </span> <br>
+		<% if(currentUser) { %>
 
-		<% if(currentUser && ( currentUser.Fname == college.Name || currentUser.Fname == "Admin" ) ){ %>
-
-		<form action="/restaurants/<%=college.Restaurant_id%>/menus/<%=department.Menu_id%>/menu_items/new" method="GET"
+		<form action="/college/<%=college.College_id%>/department/<%=department.Department_id%>/course/new" method="GET"
 			style="display:inline">
-			<button class="ui green button">ADD NEW ITEM</button>
+			<button class="ui green button">ADD new course</button>
 		</form>
 
-		<form action="/restaurants/<%=college.Restaurant_id%>/menus/<%=department.Menu_id%>?_method=DELETE"
-			method="POST" style="display:inline">
-			<button class="ui red button">DELETE department</button>
-		</form>
 		<% } %>
 
 	</h3>
@@ -59,11 +56,6 @@
 
 			<% department.course.forEach( function(course, index2) { %>
 			<div class="item">
-
-				<div class="ui small image">
-					<img src="<%=course.Image%>">
-				</div>
-
 				<div class="content pro">
 					<p class="header">
 						<%=course.Name%>
@@ -77,22 +69,9 @@
 
 					</p>
 					<div class="description">
-						<p>Price:&nbsp;&nbsp;&nbsp;<span><i class="fa fa-inr" aria-hidden="true"></i></span>
-							<%=course.Price%>
-						</p>
-						<p><i class="fa fa-users" aria-hidden="true"></i>&nbsp;&nbsp;Serves:&nbsp;&nbsp;
-							<%=course.Serves%> people</p>
-					</div>
-					<div class="extra">
-						<% if(course.Veg == 0){ %>
-						<div class="non_veg">
-							<span class="red dot">●</span>Non Veg
-						</div>
-						<% } else { %>
-						<p class="veg">
-							<span class="green dot">●</span>Veg
-						</p>
-						<% } %>
+						Description : <%=course.Description%> <br>
+						CreditPoints: <%=course.CreditPoints%> <br>
+						Duration: <%=course.Duration%> months <br>
 					</div>
 				</div>
 
@@ -103,13 +82,11 @@
 
 	</div>
 	<% });%>
-	<% if (  currentUser && ( currentUser.Fname == college.Name || currentUser.Fname == "Admin")  ) { %>
-	<a id="new_menu" href="/restaurants/<%=college.Restaurant_id%>/menus/new" class="ui green button"> Add a new
-		department!
-	</a>
+	<% if (  currentUser) { %>
+	<a id="new_menu" href="/college/<%=college.College_id%>/department/new" class="ui green button"> Add a new
+		department!</a>
 	<% } %>
 </div>
-
 
 
 <div class="ui main text segment container">
@@ -144,13 +121,12 @@
 		</div>
 		<% }); %>
 	</div>
-	<% if( currentUser && ( currentUser.Fname == college.Name.replace(/ +/g, "") || currentUser.Fname == "Admin"  ) ) { %>
-	<a href="/restaurants/<%=college.Restaurant_id%>/reviews/new" class="ui green button">
+	<% if( currentUser) { %>
+	<a href="/college/<%=college.College_id%>/reviews/new" class="ui green button">
 		Leave a review!
 	</a>
 	<% } %>
 </div>
-
 
 <style>
 	.ui.segment.grid {
@@ -173,7 +149,7 @@
 	}
 
 	.bigger.ui.segment.grid {
-		background-image: url("https://cdn.hellofresh.com/us/cms/lentil/delicious/HF_homepage_image_2017_1023x650_chicken.jpg");
+		background-image: url("https://images.static-collegedunia.com/public/college_data/images/campusimage/1419577563dyanand.jpg");
 	}
 </style>
 
